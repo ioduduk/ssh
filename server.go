@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"sync"
 	"time"
@@ -320,6 +321,7 @@ func (srv *Server) HandleConn(newConn net.Conn) {
 	//go gossh.DiscardRequests(reqs)
 	go srv.handleRequests(ctx, reqs)
 	for ch := range chans {
+		log.Printf("channel type is: %s\n", ch.ChannelType())
 		handler := srv.ChannelHandlers[ch.ChannelType()]
 		if handler == nil {
 			handler = srv.ChannelHandlers["default"]

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"sync"
 
@@ -89,6 +90,7 @@ type Session interface {
 const maxSigBufSize = 128
 
 func DefaultSessionHandler(srv *Server, conn *gossh.ServerConn, newChan gossh.NewChannel, ctx Context) {
+	log.Printf("DefaultSessionHandler Begins\n")
 	ch, reqs, err := newChan.Accept()
 	if err != nil {
 		// TODO: trigger event callback
@@ -236,6 +238,8 @@ func (sess *session) Break(c chan<- bool) {
 
 func (sess *session) handleRequests(reqs <-chan *gossh.Request) {
 	for req := range reqs {
+		log.Printf("request is: %v\n", req)
+		log.Printf("request type is: %v\n", req.Type)
 		switch req.Type {
 		case "shell", "exec":
 			if sess.handled {
@@ -245,6 +249,7 @@ func (sess *session) handleRequests(reqs <-chan *gossh.Request) {
 
 			var payload = struct{ Value string }{}
 			gossh.Unmarshal(req.Payload, &payload)
+			log.Printf("request payload: %s", payload.Value)
 			sess.rawCmd = payload.Value
 
 			// If there's a session policy callback, we need to confirm before
